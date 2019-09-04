@@ -4,6 +4,7 @@ import numpy as np
 import os
 from scipy import ndimage
 
+#高通滤波器是根据像素与邻近像素的亮度差值来提升该像素的亮度
 kernel_3x3 = np.array([
     [-1,-1,-1],
     [-1,0,-1],
