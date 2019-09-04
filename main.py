@@ -3,20 +3,21 @@ import cv2
 import numpy as np
 import os
 
+clicked = False
+def onMouse(event,x,y,flags,param):
+    global clicked
+    if event == cv2.EVENT_LBUTTONUP:
+        clicked = True
+
 cameraCapture = cv2.VideoCapture(0)
-fps = 30
-size = (int(cameraCapture.get(cv2.CAP_PROP_FRAME_WIDTH)),
-        int(cameraCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+cv2.namedWindow('myWindow')
+cv2.setMouseCallback('myWindow',onMouse)
+print('show click window or press any key to stop')
 
-videoWriter = cv2.VideoWriter(
-    'myoutputVId.avi',cv2.VideoWriter_fourcc('I','4','2','0'),fps,size
-    )
+success, frame = cameraCapture.read()
+while success and cv2.waitKey(1) == -1 and not clicked:
+    cv2.imshow('myWindow',frame)
+    success, frame = cameraCapture.read()
 
-success,frame = cameraCapture.read()
-numFramesRemaining = 10 * fps - 1
-while success and numFramesRemaining > 0 :
-    videoWriter.write(frame)
-    success,frame = cameraCapture.read()
-    numFramesRemaining -= 1
-
+cv2.destroyAllWindows()
 cameraCapture.release()
