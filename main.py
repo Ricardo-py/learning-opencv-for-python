@@ -1,16 +1,22 @@
-import cv2
 import requests
+import cv2
 import numpy as np
 import os
 
-videoCapture = cv2.VideoCapture('0.mp4')
-fps = videoCapture.get(cv2.CAP_PROP_FPS)
-print(fps,'帧')
-size = (int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH)),
-        int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-videoWrite = cv2.VideoWriter('MyOutputVid.avi',cv2.VideoWriter_fourcc('I','4','2','0'),fps,size)
-success, frame = videoCapture.read()
+cameraCapture = cv2.VideoCapture(0)
+fps = 30
+size = (int(cameraCapture.get(cv2.CAP_PROP_FRAME_WIDTH)),
+        int(cameraCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
 
-while success:
-    videoWrite.write(frame)
-    success, frame = videoCapture.read()
+videoWriter = cv2.VideoWriter(
+    'myoutputVId.avi',cv2.VideoWriter_fourcc('I','4','2','0'),fps,size
+    )
+
+success,frame = cameraCapture.read()
+numFramesRemaining = 10 * fps - 1
+while success and numFramesRemaining > 0 :
+    videoWriter.write(frame)
+    success,frame = cameraCapture.read()
+    numFramesRemaining -= 1
+
+cameraCapture.release()
