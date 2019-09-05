@@ -6,20 +6,44 @@ import filters
 import os
 from scipy import ndimage
 
-img = np.zeros((200,200),dtype=np.uint8)
 
-img[50:150,50:150] = 255
+#pyrDown 对图像进行滤波然后进行下采样
+img = cv2.pyrDown(cv2.imread('hammer.png'),cv2.IMREAD_UNCHANGED)
 
-src = cv2.imread('235157-106.jpg')
-ret, thresh = cv2.threshold(img,127,255,0)
-ret2,thresh2 = cv2.threshold(src,127,255,cv2.THRESH_BINARY)
-cv2.imshow('myWindow',thresh2)
-#findContours第一个是输入图像，第二个是轮廓检索模式，第三个是轮廓近似方法
-contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-color = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
-#函数cv2.drawContours()被用来绘制轮廓。第一个参数是一张图片，可以是原图或者其他。第二个参数是轮廓，也可以说是cv2.findContours()找出来的点集，一个列表。第三个参数是对轮廓（第二个参数）的索引，当需要绘制独立轮廓时很有用，若要全部绘制可设为-1。接下来的参数是轮廓的颜色和厚度。
-img = cv2.drawContours(color,contours,-1,(0,255,0),2)
-cv2.imshow('contours',color)
+ret, thresh = cv2.threshold(cv2.cvtColor(img.copy(),
+                            cv2.COLOR_BGR2GRAY),127,255,cv2.THRESH_BINARY)
+
+contours, hier = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+for c in contours:
+    #find bounding box coordinates
+    x,y,w,h = cv2.boundingRect(c)
+    cv2.rectangle(img,(x,y),(x + w, y + h),(0, 255, 0), 2)
+
+    #find minimum area
+    rect = cv2.minAreaRect(c)
+
+    #calculate coordinates of the minimum area rectangle
+    box = cv2.boxPoints(rect)
+
+    #normalize coordinates to integers
+    box = np.int0(box)
+
+    #draw contours
+    cv2.drawContours(img,[box],0,(0,0,255),3)
+
+    #calculate center and radius of minimum enclosing circle
+    (x,y),radius = cv2.minEnclosingCircle(c)
+
+    #cast to integers
+    center = (int(x), int(y))
+    radius = int(radius)
+
+    #draw the circle
+    img = cv2.circle(img,center,radius,(0,255,0),2)
+
+    cv2.drawContours(img, contours, -1, (255, 0, 0), 1)
+    cv2.imshow('contours',img)
+
 cv2.waitKey(0)
-cv2.destroyAllWindow()
