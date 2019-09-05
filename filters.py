@@ -16,10 +16,43 @@ def strokeEdges(src,dst,blurKsize = 7, edgeKsize = 5):
         channel[:] = channel * normalizedInverseAlpha
     cv2.merge(channels,dst)
 
-if __name__ == '__main__':
-    src = cv2.imread('235157-106.jpg')
-    dst = src
-    strokeEdges(src,dst)
-    cv2.namedWindow('myWindow',cv2.WINDOW_NORMAL)
-    cv2.imshow('myWindow',dst)
-    cv2.waitKey(0)
+class VConvolutionFilter(object):
+    """A filter that applies a convolution to V (or all of BGR)."""
+    def __init__(self,kernel):
+        self._kernel = kernel
+
+    def apply(self,src,dst):
+        """Apply the filter with a BGR or gray source/destination"""
+        cv2.filter2D(src,-1,self._kernel,dst)
+
+class SharpenFilter(VConvolutionFilter):
+    """A sharpen filter with a 1-pixel radius"""
+    def __init__(self):
+        kernel = numpy.array([
+            [-1,-1,-1],
+            [-1,9,-1],
+            [-1,-1,-1]
+        ])
+        VConvolutionFilter.__init__(self,kernel)
+
+class BlurFilter(VConvolutionFilter):
+    """A blur filter with a 2-pixel radius"""
+    def __init__(self):
+        kernel = numpy.array([
+            [0.04,0.04,0.04,0.04,0.04],
+            [0.04,0.04,0.04,0.04,0.04],
+            [0.04,0.04,0.04,0.04,0.04],
+            [0.04,0.04,0.04,0.04,0.04],
+            [0.04,0.04,0.04,0.04,0.04]
+        ])
+        VConvolutionFilter.__init__(self,kernel)
+
+class EmbossFilter(VConvolutionFilter):
+    """An emboss filter with a 1-pixel radius"""
+    def __init__(self):
+        kernel = numpy.array([
+            [-2,-1,0],
+            [-1,1,1],
+            [0,1,2]
+        ])
+        VConvolutionFilter.__init__(self,kernel)
