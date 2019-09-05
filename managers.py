@@ -19,7 +19,7 @@ class CaptureManager(object):
         self._videoWriter = None
 
         self._startTime = None
-        self._framesElapsed = long(0)
+        self._framesElapsed = int(0)
         self._fpsEstimate = None
 
     @property
@@ -70,20 +70,20 @@ class CaptureManager(object):
             self._startTime = time.time()
         else:
             timeElapsed = time.time() - self._startTime
-        self._fpsEstimate = self._framesElapsed / timeElapsed
-        self._framesElapsed += 1
+            self._fpsEstimate = self._framesElapsed / timeElapsed
+            self._framesElapsed += 1
 
         #Draw to the window, if any.
         if self.previewWindowManager is not None:
             if self.shouldMirrorPreview:
-                mirroredFrame = numpy.fliplr(self._frame).copy()
+                mirroredFrame = numpy.fliplr(numpy.array(self._frame[1])).copy()
                 self.previewWindowManager.show(mirroredFrame)
             else:
                 self.previewWindowManager.show(self._frame)
 
         #write to the image file,if any.
         if self.isWritingImage:
-            cv2.imwrite(self._imageFilename,self._frame)
+            cv2.imwrite(self._imageFilename,numpy.array(self._frame[1]))
             self._imageFilename = None
 
         #write to the video file, if any.
@@ -128,7 +128,7 @@ class CaptureManager(object):
 
             self._videoWriter = cv2.VideoWriter(self._videoFilename,self._videoEncoding,
                                                 fps,size)
-            self._videoWriter.write(self._frame)
+            self._videoWriter.write(numpy.array(self._frame[1]))
 
 class WindowManager(object):
 
