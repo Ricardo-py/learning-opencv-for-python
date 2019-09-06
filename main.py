@@ -6,28 +6,24 @@ import filters
 import os
 from scipy import ndimage
 
-img = cv2.imread('235157-106.jpg')
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+planets = cv2.imread('screenshot.png')
+gray_img = cv2.cvtColor(planets,cv2.COLOR_BGR2GRAY)
 
-edges = cv2.Canny(gray,50,120)
+img = cv2.medianBlur(gray_img, 5)
+cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
 
-minLineLength = 20
-maxLineGap = 5
+circles = cv2.HoughCircles(img,cv2.HOUGH_GRADIENT,1,120,param1=100,param2=30,minRadius=0,maxRadius=0)
 
-#opencv的HoughLinesP函数是统计概率霍夫线变换函数，该函数能输出检测到的直线的端点 (x_{0}, y_{0}, x_{1}, y_{1}),
-#其函数原型为：HoughLinesP(image, rho, theta, threshold, lines, minLineLength, maxLineGap) -> lines
-lines = cv2.HoughLinesP(edges,1,np.pi / 180, 100, minLineLength, maxLineGap)
+circles = np.uint16(np.around(circles))
 
+print(circles[0,:])
+for i in circles[0,:]:
+    #draw the outer circle
+    cv2.circle(planets,(i[0],i[1]),i[2],(0,255,0),2)
+    #draw the center of the circle
+    cv2.circle(planets,(i[0],i[1]),2,(0,0,255),3)
 
-
-for x1, y1, x2, y2 in lines[0]:
-    cv2.line(img,(x1,y1),(x2,y2),(0,255,0),2)
-
-
-cv2.imshow('edges',edges)
-
-cv2.imshow('lines',img)
-
+cv2.imwrite('planets_circles.jpg',planets)
+cv2.imshow('HoughCircles',planets)
 cv2.waitKey(0)
-
 cv2.destroyAllWindows()
