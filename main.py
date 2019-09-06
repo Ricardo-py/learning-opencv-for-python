@@ -6,44 +6,28 @@ import filters
 import os
 from scipy import ndimage
 
+img = cv2.imread('235157-106.jpg')
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-#pyrDown 对图像进行滤波然后进行下采样
-img = cv2.pyrDown(cv2.imread('hammer.png'),cv2.IMREAD_UNCHANGED)
+edges = cv2.Canny(gray,50,120)
+
+minLineLength = 20
+maxLineGap = 5
+
+#opencv的HoughLinesP函数是统计概率霍夫线变换函数，该函数能输出检测到的直线的端点 (x_{0}, y_{0}, x_{1}, y_{1}),
+#其函数原型为：HoughLinesP(image, rho, theta, threshold, lines, minLineLength, maxLineGap) -> lines
+lines = cv2.HoughLinesP(edges,1,np.pi / 180, 100, minLineLength, maxLineGap)
 
 
-ret, thresh = cv2.threshold(cv2.cvtColor(img.copy(),
-                            cv2.COLOR_BGR2GRAY),127,255,cv2.THRESH_BINARY)
 
-contours, hier = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+for x1, y1, x2, y2 in lines[0]:
+    cv2.line(img,(x1,y1),(x2,y2),(0,255,0),2)
 
-for c in contours:
-    #find bounding box coordinates
-    x,y,w,h = cv2.boundingRect(c)
-    cv2.rectangle(img,(x,y),(x + w, y + h),(0, 255, 0), 2)
 
-    #find minimum area
-    rect = cv2.minAreaRect(c)
+cv2.imshow('edges',edges)
 
-    #calculate coordinates of the minimum area rectangle
-    box = cv2.boxPoints(rect)
-
-    #normalize coordinates to integers
-    box = np.int0(box)
-
-    #draw contours
-    cv2.drawContours(img,[box],0,(0,0,255),3)
-
-    #calculate center and radius of minimum enclosing circle
-    (x,y),radius = cv2.minEnclosingCircle(c)
-
-    #cast to integers
-    center = (int(x), int(y))
-    radius = int(radius)
-
-    #draw the circle
-    img = cv2.circle(img,center,radius,(0,255,0),2)
-
-    cv2.drawContours(img, contours, -1, (255, 0, 0), 1)
-    cv2.imshow('contours',img)
+cv2.imshow('lines',img)
 
 cv2.waitKey(0)
+
+cv2.destroyAllWindows()
